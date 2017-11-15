@@ -98,6 +98,7 @@ export type Helpers = {
 };
 
 export type Handler = (data: any) => void;
+export type InnerStateInspector = (data: any) => any;
 
 export type Hook = {
   _renderers: {[key: string]: ReactRenderer},
@@ -110,4 +111,5 @@ export type Hook = {
   off: (evt: string, handler: Handler) => void,
   reactDevtoolsAgent?: ?Object,
   getFiberRoots: (rendererID : string) => Set<Object>,
+  addInnerStateInspector: ( Ctor : Function, handler : InnerStateInspector, skipIfDefined? : boolean ) => void,
 };
