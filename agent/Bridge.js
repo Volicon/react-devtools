@@ -429,14 +429,18 @@ class Bridge {
         val = iterVal;
       }
 
-      Object.getOwnPropertyNames(val).forEach(name => {
-        if (name === '__proto__') {
+
+      // Extract inner state of the third-party frameworks data objects...
+      var source = ( val && val.__inner_state__ ) || val;
+
+      Object.getOwnPropertyNames( source ).forEach(name => {
+        if (name === '__proto__' ) {
           protod = true;
         }
         if (isFn && (name === 'arguments' || name === 'callee' || name === 'caller')) {
           return;
         }
-        result[name] = dehydrate(val[name], cleaned, [name]);
+        result[name] = dehydrate( source[name], cleaned, [name]);
       });
 
       /* eslint-disable no-proto */
@@ -444,10 +448,12 @@ class Bridge {
         var newProto = {};
         var pIsFn = typeof val.__proto__ === 'function';
         Object.getOwnPropertyNames(val.__proto__).forEach(name => {
-          if (pIsFn && (name === 'arguments' || name === 'callee' || name === 'caller')) {
+          if ( name === '__inner_state__' || ( pIsFn && (name === 'arguments' || name === 'callee' || name === 'caller') ) ) {
             return;
           }
-          newProto[name] = dehydrate(val.__proto__[name], protoclean, [name]);
+          // Calculated properties should not be evaluated on prototype.
+          var prop = Object.getOwnPropertyDescriptor( val.__proto__, name );
+          newProto[name] = dehydrate( prop.get ? prop.get : val.__proto__[name], protoclean, [name]);
         });
         proto = newProto;
       }
